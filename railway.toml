@@ -1,9 +1,0 @@
-[build]
-builder = "nixpacks"
-buildCommand = "pip install -r requirements.txt"
-
-[deploy]
-# Force the application to use port 8000 which is what Railway expects
-startCommand = "uvicorn app.main:app --host=0.0.0.0 --port=8000"
-healthcheckPath = "/"
-healthcheckTimeout = 100
