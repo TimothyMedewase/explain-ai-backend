@@ -14,7 +14,46 @@ from uuid import uuid4
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Configure max conversations to store in memory
+# Use environment variable or default to 100
+MAX_CONVERSATIONS = int(os.getenv("MAX_CONVERSATIONS", 100))
+# Set conversation expiry time (in seconds) - default to 1 hour
+CONVERSATION_EXPIRY = int(os.getenv("CONVERSATION_EXPIRY", 3600))
+
+# Dictionary to store conversations with their creation timestamps
 conversation_histories = {}
+conversation_timestamps = {}
+
+# Clean up old conversations to prevent memory leaks
+def cleanup_old_conversations():
+    current_time = time.time()
+    expired_ids = []
+    
+    # Find expired conversations
+    for conv_id, timestamp in conversation_timestamps.items():
+        if current_time - timestamp > CONVERSATION_EXPIRY:
+            expired_ids.append(conv_id)
+    
+    # Remove expired conversations
+    for conv_id in expired_ids:
+        if conv_id in conversation_histories:
+            del conversation_histories[conv_id]
+        if conv_id in conversation_timestamps:
+            del conversation_timestamps[conv_id]
+    
+    # If we still have too many conversations, remove oldest ones
+    if len(conversation_histories) > MAX_CONVERSATIONS:
+        # Sort by timestamp
+        sorted_convs = sorted(conversation_timestamps.items(), key=lambda x: x[1])
+        # Get oldest conversations beyond our limit
+        to_remove = sorted_convs[:(len(sorted_convs) - MAX_CONVERSATIONS)]
+        
+        # Remove them
+        for conv_id, _ in to_remove:
+            if conv_id in conversation_histories:
+                del conversation_histories[conv_id]
+            if conv_id in conversation_timestamps:
+                del conversation_timestamps[conv_id]
 
 # Define content type detection patterns
 MATH_PATTERNS = [
@@ -76,6 +115,9 @@ def get_formatting_instructions(content_type):
 
 def process_user_query(query: str, documents: list[str], conversation_id: str = None) -> dict:
     try:
+        # Clean up old conversations to prevent memory issues
+        cleanup_old_conversations()
+        
         if not conversation_id:
             conversation_id = str(uuid4())
         
@@ -85,6 +127,11 @@ def process_user_query(query: str, documents: list[str], conversation_id: str = 
                 return_messages=True,
                 output_key="answer"
             )
+            # Record the creation timestamp
+            conversation_timestamps[conversation_id] = time.time()
+        else:
+            # Update the timestamp for this conversation
+            conversation_timestamps[conversation_id] = time.time()
         
         memory = conversation_histories[conversation_id]
         
