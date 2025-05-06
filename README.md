@@ -37,6 +37,65 @@ In the Railway dashboard, add these environment variables:
 
 Railway will automatically deploy your application when you push changes to your repository.
 
+## Deployment to Heroku
+
+### Step 1: Create a Heroku account
+
+Sign up at [Heroku](https://heroku.com) and verify your account.
+
+### Step 2: Set up Heroku CLI and deploy
+
+1. Install the Heroku CLI:
+   ```
+   brew install heroku/brew/heroku
+   ```
+
+2. Login to Heroku:
+   ```
+   heroku login
+   ```
+
+3. Create a new Heroku app:
+   ```
+   heroku create explain-ai-backend
+   ```
+
+4. Push your code to Heroku:
+   ```
+   git push heroku main
+   ```
+   If you're on a different branch, use:
+   ```
+   git push heroku your-branch-name:main
+   ```
+
+### Step 3: Configure environment variables
+
+In the Heroku dashboard or using the CLI, add these environment variables:
+
+- `OPENAI_API_KEY`: Your OpenAI API key
+- `FRONTEND_URL`: The URL of your frontend application
+- `ALLOWED_ORIGINS`: Comma-separated list of allowed origins (e.g., https://yourdomain.com,https://www.yourdomain.com)
+- `MAX_CONVERSATIONS`: (Optional) Maximum number of conversations to store in memory (default: 100)
+- `CONVERSATION_EXPIRY`: (Optional) Conversation expiry time in seconds (default: 3600)
+
+Using CLI:
+```
+heroku config:set OPENAI_API_KEY=your-api-key-here
+```
+
+### Step 4: Check the deployment
+
+Your application should now be running at:
+```
+https://your-app-name.herokuapp.com/
+```
+
+You can view logs with:
+```
+heroku logs --tail
+```
+
 ## Local Development
 
 1. Clone the repository
@@ -86,3 +145,17 @@ Upload files and get AI-generated answers about their content.
 ## Frontend Integration
 
 See the [Frontend Repository](https://github.com/yourusername/explain-ai-frontend) for how to connect your UI to this API.
+
+## Project Structure
+
+```
+├── main.py                 # Project entry point
+├── Procfile                # Heroku deployment configuration
+├── requirements.txt        # Project dependencies
+├── runtime.txt             # Python version specification
+└── app/
+    ├── file_utils.py       # File handling utilities
+    ├── main.py             # FastAPI application configuration
+    ├── rag_engine.py       # Retrieval Augmented Generation logic
+    └── routes.py           # API endpoint definitions
+```
