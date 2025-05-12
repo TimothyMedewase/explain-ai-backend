@@ -144,7 +144,7 @@ Upload files and get AI-generated answers about their content.
 
 ## Frontend Integration
 
-See the [Frontend Repository](https://github.com/yourusername/explain-ai-frontend) for how to connect your UI to this API.
+See the [Frontend Repository](https://github.com/TimothyMedewase/explainai) for how to connect your UI to this API.
 
 ## Project Structure
 
