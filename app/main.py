@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import RedirectResponse
 from app.routes import router
 from dotenv import load_dotenv
 import os
@@ -57,3 +56,30 @@ async def debug_cors():
     }
 
 app.include_router(router)
+
+
+def custom_openapi():
+    """Patch OpenAPI schema so Swagger UI shows file upload controls for the files field."""
+    if app.openapi_schema:
+        return app.openapi_schema
+    from fastapi.openapi.utils import get_openapi
+    openapi_schema = get_openapi(
+        title=app.title,
+        version=app.version,
+        description=app.description,
+        routes=app.routes,
+        openapi_version="3.0.2",  # OpenAPI 3.0 uses format: binary for files, better Swagger UI support
+    )
+    # Fix files schema: ensure format=binary so Swagger UI renders file picker
+    process_schema = openapi_schema.get("components", {}).get("schemas", {}).get("Body_process_process_post")
+    if process_schema and "files" in process_schema.get("properties", {}):
+        files_prop = process_schema["properties"]["files"]
+        if "items" in files_prop:
+            files_prop["items"]["format"] = "binary"
+            # Remove contentMediaType if present (OpenAPI 3.1) - Swagger UI prefers format: binary
+            files_prop["items"].pop("contentMediaType", None)
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
+
+
+app.openapi = custom_openapi

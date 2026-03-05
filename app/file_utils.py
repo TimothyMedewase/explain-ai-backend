@@ -11,7 +11,10 @@ async def extract_text_from_file(file: UploadFile) -> str:
         if file.filename.endswith(".pdf"):
             pdf_bytes = await file.read()
             doc = fitz.open(stream=pdf_bytes, filetype="pdf")
-            text = "\n".join([page.get_text() for page in doc])
+            try:
+                text = "\n".join([page.get_text() for page in doc])
+            finally:
+                doc.close()
             await file.seek(0)
             return text
         elif file.content_type and file.content_type.startswith("text/"):

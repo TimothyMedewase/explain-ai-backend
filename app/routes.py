@@ -12,7 +12,7 @@ router = APIRouter()
 
 @router.post("/process", status_code=status.HTTP_200_OK)
 async def process(
-    files: List[UploadFile] = File(...),
+    files: List[UploadFile] = File(..., description="Upload one or more PDF/document files (max 5)"),
     query: str = Form(...),
     conversation_id: Optional[str] = Form(None)
 ):
